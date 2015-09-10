@@ -16,13 +16,13 @@
     EOF
 
     s2 =<<EOF
-    <?dynarex schema='email[title]/messages(from, to, subject)'?>
+    <?dynarex schema='email[title]/messages(from, to, subject)' delimiter='#'?>
     title: Email for James
     -----------------------
 
-    abc@ruby132.org     james@jamesrobertson.eu test 123
-    info@gtdtoday.co.uk james@jamesrobertson.eu How to plan ahead (newsletter)
-    a123456@aol.com     info@jamesrobertson.eu  hello
+    abc@ruby132.org     # james@jamesrobertson.eu # test 123
+    info@gtdtoday.co.uk # james@jamesrobertson.eu # How to plan ahead (newsletter)
+    a123456@aol.com     # info@jamesrobertson.eu  # hello
 
     EOF
 
