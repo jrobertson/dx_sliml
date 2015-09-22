@@ -12,8 +12,12 @@ class DxSliml
   def initialize(sliml, dx)
 
     @dx = dx.is_a?(Dynarex) ? dx : Dynarex.new(dx)
+    
+    sliml.gsub!(/\{[^\}]+\}/) { |x| x.gsub(/\$(\w+)/,'\'{\1}\'')}
     xml = LineTree.new(sliml).to_xml declaration: false, pretty: true
+    
     @recxsl = xml.gsub(/\$(\w+)/, '<xsl:value-of select="\1"/>')
+    
     @to_xslt = build_xslt
 
     xslt  = Nokogiri::XSLT(@to_xslt)
