@@ -14,7 +14,7 @@ class DxSliml
     @dx = dx.is_a?(Dynarex) ? dx : Dynarex.new(dx)
        
     sliml.gsub!(/\{[^\}]+/) do |x|
-      x.gsub(/["']?(\S*)(\$\w+)([^"']*)["']?/,'\'\1{\2}\3\'')
+      x.gsub(/["']?(\S*)\$(\w+)([^"']*)["']?/,'\'\1{\2}\3\'')
     end
     
     xml = LineTree.new(sliml).to_xml declaration: false, pretty: true
