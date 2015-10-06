@@ -13,7 +13,7 @@ class DxSliml
 
     @dx = dx.is_a?(Dynarex) ? dx : Dynarex.new(dx)
     
-    sliml.gsub!(/\{[^\}]+\}/) { |x| x.gsub(/\$(\w+)/,'\'{\1}\'')}
+    sliml.gsub!(/\{[^\}]+\}/) { |x| x.gsub(/(\S*)\$(\w+)/,'\'\1{\2}\'')}
     xml = LineTree.new(sliml).to_xml declaration: false, pretty: true
     
     @recxsl = xml.gsub(/\$(\w+)/, '<xsl:value-of select="\1"/>')
