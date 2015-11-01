@@ -9,9 +9,30 @@ class DxSliml
 
   attr_reader :to_xslt, :to_html
 
-  def initialize(sliml, dx)
+  def initialize(sliml=nil, dynarex=nil, dx: dynarex, fields: nil)
 
-    @dx = dx.is_a?(Dynarex) ? dx : Dynarex.new(dx)
+    
+    if sliml.nil? and fields.nil? then
+      
+      if dx then
+        
+        @dx = dx.is_a?(Dynarex) ? dx : Dynarex.new(dx)    
+        # fetch the fields from the schema
+        fields = @dx.schema[/\(([^\)]+)/,1].split(/,\s/)
+        
+      else
+        raise 'RxSliml: please enter a sliml string or an array of fields'
+      end
+      
+    else
+      @dx = dx.is_a?(Dynarex) ? dx : Dynarex.new(dx)    
+    end
+    
+    
+    
+    sliml ||= create_sliml(fields)
+    @sliml = sliml    
+    
        
     sliml.gsub!(/\{[^\}]+/) do |x|
       x.gsub(/["']?(\S*)\$(\w+)([^"']*)["']?/,'\'\1{\2}\3\'')
@@ -26,6 +47,12 @@ class DxSliml
     xslt  = Nokogiri::XSLT(@to_xslt)
     @to_html = xslt.transform(Nokogiri::XML(@dx.to_xml))
 
+  end
+
+  def to_sliml()
+    
+    @sliml
+    
   end
 
 
@@ -88,5 +115,13 @@ class DxSliml
 
     xml2.sub('<rec_template/>', @recxsl)
   end
+  
+  def create_sliml(fields)
+    
+    lines = ['dl']
+    lines << fields.map {|field| "  dt %s:\n  dd $%s\n" % ([field.to_s]*2) }
+    lines.join("\n")
+    
+  end  
 
 end
