@@ -44,8 +44,9 @@ class DxSliml
     
     @to_xslt = build_xslt
 
-    xslt  = Nokogiri::XSLT(@to_xslt)
-    @to_html = xslt.transform(Nokogiri::XML(@dx.to_xml))
+    #jr190316 xslt  = Nokogiri::XSLT(@to_xslt)
+    #jr190316 @to_html = xslt.transform(Nokogiri::XML(@dx.to_xml))
+    @to_html = Rexslt.new(@to_xslt, dx.to_xml).to_s
 
   end
 
