@@ -7,7 +7,7 @@ require 'dynarex'
 
 class DxSliml
 
-  attr_reader :to_xslt, :to_html
+  attr_reader :to_xslt, :to_html, :to_xml
 
   def initialize(sliml=nil, dynarex=nil, dx: dynarex, fields: nil)
 
@@ -32,7 +32,6 @@ class DxSliml
     
     sliml ||= create_sliml(fields)
     @sliml = sliml    
-    
        
     sliml.gsub!(/\{[^\}]+/) do |x|
       x.gsub(/["']?(\S*)\$(\w+)([^"']*)["']?/,'\'\1{\2}\3\'')
@@ -42,11 +41,13 @@ class DxSliml
     
     @recxsl = xml.gsub(/\$(\w+)/, '<xsl:value-of select="\1"/>')
     
-    @to_xslt = build_xslt
+    @to_xslt = build_html_xslt
+    xml_xslt = build_xml_xslt
 
     #jr190316 xslt  = Nokogiri::XSLT(@to_xslt)
     #jr190316 @to_html = xslt.transform(Nokogiri::XML(@dx.to_xml))
     @to_html = Rexslt.new(@to_xslt, dx.to_xml).to_s
+    @to_xml = Rexslt.new(xml_xslt, dx.to_xml).to_xml
 
   end
 
@@ -59,7 +60,7 @@ class DxSliml
 
   private
 
-  def build_xslt()
+  def build_html_xslt()
 
     schema = @dx.schema
     rootname, recname = schema.split('/').map{|x| x[/\w+/]}
@@ -99,6 +100,41 @@ class DxSliml
           end
         end
       end
+
+      xml.xsl_template(match: 'records/' + recname) do
+
+        xml.rec_template
+
+      end
+
+    end
+
+    xml2 = Rexle.new(raw_a).xml(pretty: true).gsub('xsl_apply_templates',\
+        'xsl:apply-templates').gsub('xsl_value_of','xsl:value-of').\
+        gsub('xsl_template','xsl:template').\
+        gsub('xmlns_xsl','xmlns:xsl').gsub('xsl_for_each','xsl:for-each').\
+        gsub('xsl_','xsl:')
+
+    xml2.sub('<rec_template/>', @recxsl)
+  end
+  
+  def build_xml_xslt()
+
+    schema = @dx.schema
+    rootname, recname = schema.split('/').map{|x| x[/\w+/]}
+
+    xml = RexleBuilder.new
+    raw_a = xml.xsl_stylesheet(xmlns_xsl: \
+                     "http://www.w3.org/1999/XSL/Transform", version: "1.0") do
+      xml.xsl_output(method: "xml", indent: "yes", \
+                                              :"omit-xml-declaration" => "yes")
+
+      xml.xsl_template(match: rootname) do
+
+              xml.xsl_apply_templates(select: 'records/' + recname)
+
+      end
+
 
       xml.xsl_template(match: 'records/' + recname) do
 
